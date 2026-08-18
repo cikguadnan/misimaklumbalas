@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<title>Misi Maklum Balas Bot</title>
+<style>
+:root{
+  --accent:#6f2f3c;
+  --accent-dark:#51323a;
+  --ink:#24303a;
+  --muted:#6f7882;
+  --bg:#f3f0ec;
+  --card:#fffdfb;
+  --line:#e6dfd8;
+  --good:#edf3ef;
+  --good-line:#d2e0d7;
+  --improve:#f5eee8;
+  --improve-line:#e5d5ca;
+  --soft:#f5edef;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer;touch-action:manipulation}
+.app{max-width:940px;margin:auto;min-height:100vh;padding-bottom:98px}
+header{
+  position:sticky;top:0;z-index:20;
+  background:rgba(248,245,241,.96);backdrop-filter:blur(10px);
+  border-bottom:1px solid #e2dad3;padding:14px 16px 10px
+}
+.top{display:flex;align-items:center;gap:12px}
+.logo{
+  width:48px;height:48px;border-radius:15px;background:var(--accent);
+  display:grid;place-items:center;flex:0 0 48px
+}
+.head h1{font-size:18px;margin:0}
+.progress{height:10px;background:#e3ddd7;border-radius:999px;overflow:hidden;margin-top:12px}
+.progressbar{height:100%;width:0;background:linear-gradient(90deg,#b98b7b,var(--accent));transition:.25s}
+.progressmeta{display:flex;justify-content:space-between;margin-top:6px;font-size:11px;color:var(--muted)}
+main{padding:18px}
+.screen{display:none;animation:fade .18s ease}
+.screen.active{display:block}
+@keyframes fade{from{opacity:.3;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+.hero{
+  background:linear-gradient(145deg,#7a2e3a,#51323a);color:#fff;
+  border-radius:30px;padding:30px;box-shadow:0 18px 42px rgba(74,49,56,.16)
+}
+.badge{display:inline-block;background:rgba(255,255,255,.14);padding:7px 11px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.05em}
+.hero h2.missionHeadline{font-size:32px;line-height:1.14;max-width:760px;letter-spacing:-.025em;margin:18px 0 0}
+.flow{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+.flow span{background:rgba(255,255,255,.12);padding:9px 11px;border-radius:13px;font-size:12px;font-weight:700}
+
+.card{
+  background:var(--card);border:1px solid var(--line);border-radius:24px;
+  padding:24px;margin-bottom:16px;box-shadow:0 10px 28px rgba(54,45,39,.055)
+}
+.step{font-size:11px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#8a5c66}
+.title{font-size:30px;line-height:1.12;margin:10px 0 10px;letter-spacing:-.02em}
+.sub{color:var(--muted);line-height:1.6;margin:0 0 20px;font-size:15px}
+label{display:block;font-size:13px;font-weight:800;margin:15px 0 7px}
+input,textarea,select{
+  width:100%;border:1.5px solid #d9d1ca;border-radius:16px;
+  padding:14px 15px;background:#fff;outline:none
+}
+textarea{min-height:105px;resize:vertical;line-height:1.55}
+input:focus,textarea:focus,select:focus{border-color:#8b5963;box-shadow:0 0 0 3px rgba(111,47,60,.08)}
+
+.studentInfoRow{display:grid;grid-template-columns:2fr 1fr;gap:14px;align-items:end}
+.studentInfoRow label{margin-top:0}
+
+.questionRecap{
+  background:#f8f4f1;border:1px solid #e4dbd4;border-radius:20px;padding:12px
+}
+.questionRecapImage{width:100%;display:block;border-radius:14px;background:#fff}
+
+.feedbackWrap{display:none;margin-top:18px}
+.feedbackWrap.show{display:block}
+.feedbackImage{
+  width:100%;max-height:700px;object-fit:contain;background:#f2f0ed;
+  border:1px solid var(--line);border-radius:22px;padding:8px
+}
+.feedbackCaption{text-align:center;font-size:12px;color:var(--muted);margin-top:8px}
+
+.scoregrid{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:stretch;margin-top:14px}
+.scorecard{border:1px solid var(--line);border-radius:20px;padding:18px;background:#fff}
+.scorecard h3{margin:0 0 10px;font-size:17px}
+.arrow{display:grid;place-items:center;font-size:28px;font-weight:700}
+
+.analysisCard{border-radius:20px;padding:20px;margin-top:16px}
+.analysisCard.good{background:var(--good);border:1px solid var(--good-line)}
+.analysisCard.improve{background:var(--improve);border:1px solid var(--improve-line)}
+.analysisCard h3{margin:0 0 2px;text-align:center;font-size:17px}
+.writingCard{
+  min-height:96px;margin-top:12px;padding:17px 18px 14px 44px;
+  border:1px solid #ddd5cf;border-radius:17px;background-color:#fffdfb;
+  background-image:
+    linear-gradient(to right,transparent 0,transparent 31px,rgba(111,47,60,.13) 31px,rgba(111,47,60,.13) 32px,transparent 32px),
+    repeating-linear-gradient(to bottom,transparent 0,transparent 31px,rgba(111,120,130,.14) 31px,rgba(111,120,130,.14) 32px);
+  line-height:32px;font-size:15px;resize:none
+}
+
+.focusBox{
+  background:var(--soft);border:1px solid #e2d2d6;border-radius:22px;padding:19px;margin:15px 0
+}
+.focusBox .small{font-size:11px;font-weight:900;color:var(--accent);letter-spacing:.08em}
+.focusItem{display:flex;gap:10px;align-items:flex-start;margin-top:12px;font-size:17px;font-weight:700}
+.focusNum{
+  flex:0 0 30px;width:30px;height:30px;border-radius:50%;
+  background:var(--accent);color:#fff;display:grid;place-items:center;font-size:13px
+}
+
+.timer{background:#34363a;color:#fff;border-radius:24px;padding:24px;text-align:center;margin:14px 0}
+.time{font-size:58px;font-weight:900;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.timerBtns{display:flex;justify-content:center;gap:8px;margin-top:12px;flex-wrap:wrap}
+.smallbtn{border:0;background:#fff;color:#101828;border-radius:14px;padding:10px 14px;font-weight:800}
+
+.supportPanel{
+  display:none;margin-top:18px;border:1px solid #ddd3cc;border-radius:22px;
+  background:#fffdfb;overflow:hidden;box-shadow:0 8px 24px rgba(54,45,39,.04)
+}
+.supportPanel.show{display:block}
+.supportPanel summary{
+  list-style:none;cursor:pointer;padding:17px 20px;font-size:15px;font-weight:800;
+  color:#5e3941;display:flex;align-items:center;justify-content:space-between;background:#f5eeea
+}
+.supportPanel summary::-webkit-details-marker{display:none}
+.supportPanel summary::after{
+  content:"+";width:28px;height:28px;border-radius:50%;display:grid;place-items:center;
+  background:var(--accent);color:#fff;font-size:18px;font-weight:500
+}
+.supportPanel[open] summary::after{content:"–"}
+.supportBody{padding:18px}
+.supportImage{width:100%;max-height:560px;object-fit:contain;display:block;border-radius:16px;border:1px solid #e5ddd7;background:#fff}
+.supportPhraseTitle{margin:20px 0 10px;font-size:13px;font-weight:900;color:var(--accent);letter-spacing:.05em}
+.supportPhrases{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.supportPhrase{padding:13px 15px;border-radius:14px;background:#f8f4f1;border:1px solid #e6ddd6;font-size:14px;line-height:1.4}
+
+.btn{border:0;border-radius:16px;padding:15px 19px;font-weight:800;min-height:52px}
+.btn.primary{background:var(--accent);color:#fff;box-shadow:0 8px 18px rgba(111,47,60,.15)}
+.btn.orange{background:#8a554b;color:#fff;box-shadow:0 8px 18px rgba(138,85,75,.14)}
+.btn.secondary{background:#fffdfb;color:var(--accent);border:1.5px solid #d9cfc8}
+.btn.full{width:100%}
+
+.fixCheckRow{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;padding:14px 0;border-bottom:1px solid #e3d9d3}
+.fixCheckRow:last-child{border-bottom:0}
+.fixText{display:flex;gap:10px;align-items:flex-start;font-weight:700;line-height:1.45}
+.yesNoGroup{display:flex;gap:8px}
+.resultBtn{
+  border:1.5px solid #d9d1ca;border-radius:14px;padding:10px 14px;background:#fff;
+  font-weight:700;min-width:76px
+}
+.resultBtn.selected{border-color:var(--accent);background:#f3eaec;color:#542d36}
+
+.versionCompareGrid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:stretch}
+.versionPanel{
+  background:#fffdfb;border:1px solid var(--line);border-radius:22px;padding:18px;
+  box-shadow:0 8px 22px rgba(54,45,39,.04);height:100%;display:flex;flex-direction:column
+}
+.versionLabel{display:inline-block;background:var(--accent);color:#fff;border-radius:999px;padding:7px 11px;font-size:11px;font-weight:900;letter-spacing:.08em;margin-bottom:14px}
+.scoreSummary{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.scoreSummary div{background:#f6f1ed;border:1px solid #e6ddd6;border-radius:15px;padding:12px}
+.scoreSummary span{display:block;font-size:11px;color:var(--muted);margin-bottom:5px}
+.scoreSummary strong{font-size:19px;color:#5d343d}
+.feedbackMini{border-radius:17px;padding:14px;margin-top:12px;min-height:154px}
+.feedbackMini h3{font-size:14px;margin:0 0 10px;line-height:1.35}
+.goodMini{background:var(--good);border:1px solid var(--good-line)}
+.improveMini{background:var(--improve);border:1px solid var(--improve-line)}
+.miniItem{display:grid;grid-template-columns:27px 1fr;gap:8px;align-items:start;margin-top:8px}
+.miniItem span{width:27px;height:27px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:#fff;font-size:11px;font-weight:900}
+.miniItem p{margin:2px 0 0;line-height:1.45;font-size:13px}
+
+.reflectionBlock{
+  background:#fffdfb;border:1px solid #e3dbd4;border-radius:22px;padding:24px;
+  margin-top:18px;box-shadow:0 8px 24px rgba(54,45,39,.035)
+}
+.questionNumber{display:inline-block;margin-bottom:8px;color:#7a515a;font-size:11px;font-weight:900;letter-spacing:.12em}
+.reflectionQuestion{margin:0 0 18px;font-size:17px;line-height:1.5;font-weight:700;color:var(--ink)}
+.reflectionChoices{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.reflectionChoices.singleSelect{grid-template-columns:repeat(3,1fr)}
+.reflectionBtn{
+  border:1.5px solid #ddd4cd;background:#fff;border-radius:17px;padding:16px;
+  text-align:left;font-size:14px;line-height:1.45;font-weight:600;color:#33383d;
+  min-height:70px;display:flex;align-items:center;gap:11px
+}
+.reflectionBtn.selected{border-color:var(--accent);background:#f3eaec;color:#542d36}
+.optionDot{width:18px;height:18px;border-radius:50%;border:2px solid #bcaea7;flex:0 0 18px;background:#fff}
+.reflectionBtn.selected .optionDot{border:5px solid var(--accent)}
+.optionCheck{
+  width:24px;height:24px;border-radius:7px;border:1.5px solid #cbbfb8;
+  display:grid;place-items:center;flex:0 0 24px;color:transparent;background:#fff;font-size:13px
+}
+.reflectionBtn.selected .optionCheck{background:var(--accent);border-color:var(--accent);color:#fff}
+
+.missionDone{
+  max-width:700px;margin:36px auto 0;text-align:center;
+  background:linear-gradient(145deg,#fffdfb,#f4eeea);border:1px solid #dfd5cf;
+  border-radius:30px;padding:44px 30px;box-shadow:0 16px 40px rgba(54,45,39,.07)
+}
+.missionDoneIcon{
+  width:76px;height:76px;border-radius:50%;margin:0 auto 16px;display:grid;place-items:center;
+  background:var(--accent);color:#fff;font-size:38px;font-weight:900
+}
+.missionDoneEyebrow{color:#8a6068;font-size:11px;font-weight:900;letter-spacing:.13em}
+.missionDone h2{margin:10px 0;font-size:38px;letter-spacing:-.03em}
+.missionDone p{max-width:540px;margin:0 auto;color:var(--muted);line-height:1.6;font-size:15px}
+.missionDoneCard{margin:24px auto 0;max-width:480px;padding:18px;border-radius:18px;background:#fff;border:1px solid #e5ddd7}
+.missionDoneCard strong{display:block;color:var(--accent);font-size:18px;margin-bottom:4px}
+.missionDoneCard span{color:#6e747a;font-size:14px;line-height:1.45}
+
+.action{
+  position:fixed;left:0;right:0;bottom:0;z-index:25;background:rgba(255,255,255,.96);
+  backdrop-filter:blur(10px);border-top:1px solid var(--line);
+  padding:12px 16px max(12px,env(safe-area-inset-bottom))
+}
+.actionin{max-width:904px;margin:auto;display:flex;gap:10px}
+.actionin .btn{flex:1}
+.mini{font-size:12px;color:var(--muted);line-height:1.45}
+
+@media(max-width:700px){
+  .versionCompareGrid{grid-template-columns:1fr}
+  .versionPanel{height:auto}
+  .feedbackMini{min-height:0}
+  .reflectionChoices,.reflectionChoices.singleSelect{grid-template-columns:1fr}
+}
+@media(max-width:650px){
+  .hero{padding:24px}.hero h2.missionHeadline{font-size:27px}
+  .scoregrid{grid-template-columns:1fr}.arrow{transform:rotate(90deg)}
+  .fixCheckRow{grid-template-columns:1fr}
+  .yesNoGroup{width:100%}.yesNoGroup .resultBtn{flex:1}
+  .supportPhrases{grid-template-columns:1fr}
+}
+@media(max-width:480px){
+  .studentInfoRow{grid-template-columns:1fr}
+  .title{font-size:27px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="top">
+    <div class="logo" aria-label="Bot">
+      <svg viewBox="0 0 64 64" width="30" height="30" aria-hidden="true">
+        <rect x="13" y="16" width="38" height="31" rx="10" fill="#fff"/>
+        <path d="M32 13V7" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="32" cy="6" r="2" fill="#fff"/>
+        <circle cx="25" cy="30" r="3" fill="#6f2f3c"/>
+        <circle cx="39" cy="30" r="3" fill="#6f2f3c"/>
+        <path d="M24 38c2.3 2 4.9 3 8 3s5.7-1 8-3" fill="none" stroke="#6f2f3c" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="head"><h1>Misi Maklum Balas Bot</h1></div>
+  </div>
+  <div class="progress"><div id="progressbar" class="progressbar"></div></div>
+  <div class="progressmeta"><span id="stepLabel">Mula</span><span id="stepCount">0/9</span></div>
+</header>
+
+<main>
+<section class="screen active" data-step="0">
+  <div class="hero">
+    <span class="badge">MISI HARI INI</span>
+    <h2 class="missionHeadline">Gunakan feedback daripada Bot untuk membuat jawapan kamu lebih baik.</h2>
+    <div class="flow">
+      <span>Soalan</span><span>Contoh Feedback</span><span>Feedback Saya</span><span>Versi 2.0</span>
+      <span>Cuba Bot</span><span>Feedback Baharu</span><span>Bandingkan</span><span>Renungan</span>
+    </div>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <div class="studentInfoRow">
+      <div><label>Nama</label><input id="studentName" type="text" placeholder="Masukkan nama kamu"></div>
+      <div><label>Kelas</label><input id="studentClass" type="text" placeholder="Contoh: 3G1"></div>
+    </div>
+  </div>
+</section>
+
+<section class="screen" data-step="1">
+  <div class="card">
+    <div class="step">Langkah 1</div>
+    <h2 class="title" style="text-align:center">Lihat semula soalan</h2>
+    <p class="sub" style="text-align:center">Baca semula soalan sebelum melihat contoh feedback.</p>
+    <div class="questionRecap">
+      <img src="support/soalan-hari-kebangsaan.png" alt="Soalan Hari Kebangsaan" class="questionRecapImage">
+    </div>
+  </div>
+</section>
+
+<section class="screen" data-step="2">
+  <div class="card" style="text-align:center;padding:46px 28px">
+    <div class="step">Langkah 2</div>
+    <h2 class="title" style="font-size:36px;margin-top:14px">Lihat contoh feedback<br>di skrin depan</h2>
+  </div>
+</section>
+
+<section class="screen" data-step="3">
+  <div class="card">
+    <div class="step">Langkah 3</div>
+    <h2 class="title">Feedback Saya</h2>
+    <p class="sub">Pilih nama kamu untuk melihat feedback yang cikgu sediakan.</p>
+
+    <label>Pilih nama</label>
+    <select id="studentSelect" onchange="showStudentFeedback()">
+      <option value="">— Pilih nama kamu —</option>
+    </select>
+
+    <div id="feedbackWrap" class="feedbackWrap">
+      <img id="feedbackImage" class="feedbackImage" alt="Maklum balas pelajar">
+      <div id="feedbackCaption" class="feedbackCaption"></div>
+      <div id="feedbackImageError" class="feedbackCaption" style="display:none;color:#8a4a4a">Gambar feedback tidak dapat dimuatkan. Sila maklumkan kepada cikgu.</div>
+
+      <div class="scoregrid" style="margin-top:18px">
+        <div class="scorecard"><h3>Isi</h3><input id="oldContent" type="text" inputmode="numeric" placeholder="__/5"></div>
+        <div class="arrow">+</div>
+        <div class="scorecard"><h3>Bahasa & Organisasi</h3><input id="oldLanguage" type="text" inputmode="numeric" placeholder="__/5"></div>
+      </div>
+
+      <div class="analysisCard good">
+        <h3>2 perkara yang saya lakukan dengan baik</h3>
+        <textarea class="writingCard" id="goodThing1" placeholder="Perkara 1"></textarea>
+        <textarea class="writingCard" id="goodThing2" placeholder="Perkara 2"></textarea>
+      </div>
+
+      <div class="analysisCard improve">
+        <h3>2 perkara yang saya perlu baiki</h3>
+        <textarea class="writingCard" id="improve1" placeholder="Perkara 1"></textarea>
+        <textarea class="writingCard" id="improve2" placeholder="Perkara 2"></textarea>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="screen" data-step="4">
+  <div class="card">
+    <div class="step">Langkah 4</div>
+    <h2 class="title">Tulis Versi 2.0</h2>
+    <p class="sub">Versi baharu kamu mesti cuba memperbaiki DUA perkara daripada feedback tadi.</p>
+
+    <div class="focusBox">
+      <div class="small">DUA PERKARA YANG MESTI SAYA BAIKI</div>
+      <div class="focusItem"><span class="focusNum">1</span><span id="focusImprove1">Belum diisi.</span></div>
+      <div class="focusItem"><span class="focusNum">2</span><span id="focusImprove2">Belum diisi.</span></div>
+    </div>
+
+    <details id="supportPanel" class="supportPanel">
+      <summary>Bantuan Menulis</summary>
+      <div class="supportBody">
+        <img class="supportImage" src="support/kosa-kata-rangsangan.png" alt="Kosa kata rangsangan Hari Kebangsaan">
+        <div class="supportPhraseTitle">KOSA KATA BANTUAN</div>
+        <div id="customVocabulary" class="supportPhrases"></div>
+      </div>
+    </details>
+
+    <div class="timer">
+      <div class="mini" style="color:#cbd5e1">MASA MENULIS</div>
+      <div class="time" id="timerDisplay">20:00</div>
+      <div class="timerBtns">
+        <button class="smallbtn" type="button" onclick="startTimer()">▶ Mula</button>
+        <button class="smallbtn" type="button" onclick="pauseTimer()">⏸ Jeda</button>
+        <button class="smallbtn" type="button" onclick="resetTimer()">↻ Reset</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="screen" data-step="5">
+  <div class="card">
+    <div class="step">Langkah 5</div>
+    <h2 class="title">Cuba Bot Sendiri</h2>
+    <p class="sub">Ambil gambar soalan dan juga jawapan anda Versi 2.0 untuk dinaikmuat ke bot.</p>
+
+    <button class="btn orange full" type="button" onclick="openFeedbackBot()">BUKA BOT MAKLUM BALAS</button>
+
+    <div class="focusBox" style="margin-top:18px">
+      <div class="small">SEMASA BACA FEEDBACK BAHARU, SEMAK 2 PERKARA INI</div>
+      <div class="focusItem"><span class="focusNum">1</span><span id="botImprove1">Belum diisi.</span></div>
+      <div class="focusItem"><span class="focusNum">2</span><span id="botImprove2">Belum diisi.</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="screen" data-step="6">
+  <div class="card">
+    <div class="step">Langkah 6</div>
+    <h2 class="title">Feedback Baharu Saya</h2>
+
+    <div class="scoregrid" style="margin-top:18px">
+      <div class="scorecard"><h3>Isi</h3><input id="newContent" type="text" inputmode="numeric" placeholder="__/5"></div>
+      <div class="arrow">+</div>
+      <div class="scorecard"><h3>Bahasa & Organisasi</h3><input id="newLanguage" type="text" inputmode="numeric" placeholder="__/5"></div>
+    </div>
+
+    <div class="focusBox" style="margin-top:18px">
+      <div class="small">2 PERKARA YANG PATUT SAYA PERBAIKI SUDAH DIBETULKAN</div>
+
+      <div class="fixCheckRow">
+        <div class="fixText"><span class="focusNum">1</span><span id="reviewImprove1">Belum diisi.</span></div>
+        <div class="yesNoGroup singleSelect" data-target="fix1">
+          <button class="resultBtn" type="button">Ya</button>
+          <button class="resultBtn" type="button">Belum</button>
+        </div>
+      </div>
+
+      <div class="fixCheckRow">
+        <div class="fixText"><span class="focusNum">2</span><span id="reviewImprove2">Belum diisi.</span></div>
+        <div class="yesNoGroup singleSelect" data-target="fix2">
+          <button class="resultBtn" type="button">Ya</button>
+          <button class="resultBtn" type="button">Belum</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="analysisCard good">
+      <h3>1 perkara yang saya lakukan dengan baik untuk Versi 2</h3>
+      <textarea class="writingCard" id="newGood1" placeholder="Perkara yang baik"></textarea>
+    </div>
+
+    <div class="analysisCard improve">
+      <h3>1 perkara lain yang saya perlu perbaiki daripada Versi 2</h3>
+      <textarea class="writingCard" id="newImprove1" placeholder="Perkara yang masih perlu diperbaiki"></textarea>
+    </div>
+  </div>
+</section>
+
+<section class="screen" data-step="7">
+  <div class="card">
+    <div class="step">Langkah 7</div>
+    <h2 class="title">Bandingkan</h2>
+
+    <div class="versionCompareGrid">
+      <div class="versionPanel">
+        <div class="versionLabel">VERSI 1</div>
+        <div class="scoreSummary">
+          <div><span>Isi</span><strong id="oldContentView">—</strong></div>
+          <div><span>Bahasa & Organisasi</span><strong id="oldLanguageView">—</strong></div>
+        </div>
+
+        <div class="feedbackMini goodMini">
+          <h3>2 perkara yang saya lakukan dengan baik</h3>
+          <div class="miniItem"><span>1</span><p id="v1Good1">—</p></div>
+          <div class="miniItem"><span>2</span><p id="v1Good2">—</p></div>
+        </div>
+
+        <div class="feedbackMini improveMini">
+          <h3>2 perkara yang saya perlu baiki</h3>
+          <div class="miniItem"><span>1</span><p id="v1Improve1">—</p></div>
+          <div class="miniItem"><span>2</span><p id="v1Improve2">—</p></div>
+        </div>
+      </div>
+
+      <div class="versionPanel">
+        <div class="versionLabel">VERSI 2</div>
+        <div class="scoreSummary">
+          <div><span>Isi</span><strong id="newContentView">—</strong></div>
+          <div><span>Bahasa & Organisasi</span><strong id="newLanguageView">—</strong></div>
+        </div>
+
+        <div class="feedbackMini goodMini">
+          <h3>1 perkara yang saya lakukan dengan baik</h3>
+          <div class="miniItem"><span>1</span><p id="v2Good1">—</p></div>
+        </div>
+
+        <div class="feedbackMini improveMini">
+          <h3>1 perkara lain yang saya perlu perbaiki</h3>
+          <div class="miniItem"><span>1</span><p id="v2Improve1">—</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="screen" data-step="8">
+  <div class="card">
+    <div class="step">Langkah 8</div>
+    <h2 class="title">Renungan tentang Feedback</h2>
+
+    <div class="reflectionBlock">
+      <div class="questionNumber">SOALAN 1</div>
+      <h3 class="reflectionQuestion">Adakah feedback Versi 1 membantu anda menulis versi yang lebih baik?</h3>
+      <div class="reflectionChoices singleSelect" data-target="reflection1">
+        <button class="reflectionBtn" type="button"><span class="optionDot"></span><span>Ya, sangat membantu</span></button>
+        <button class="reflectionBtn" type="button"><span class="optionDot"></span><span>Ya, sedikit membantu</span></button>
+        <button class="reflectionBtn" type="button"><span class="optionDot"></span><span>Belum begitu membantu</span></button>
+      </div>
+    </div>
+
+    <div class="reflectionBlock">
+      <div class="questionNumber">SOALAN 2</div>
+      <h3 class="reflectionQuestion">Bagaimana Bot Feedback ini memperbaiki penulisan anda?</h3>
+      <div class="reflectionChoices multiSelect" data-target="reflection2">
+        <button class="reflectionBtn" type="button"><span class="optionCheck">✓</span><span>Membantu saya nampak kesalahan</span></button>
+        <button class="reflectionBtn" type="button"><span class="optionCheck">✓</span><span>Membantu saya tambah isi</span></button>
+        <button class="reflectionBtn" type="button"><span class="optionCheck">✓</span><span>Membantu saya baiki bahasa</span></button>
+        <button class="reflectionBtn" type="button"><span class="optionCheck">✓</span><span>Membantu saya susun idea</span></button>
+        <button class="reflectionBtn" type="button"><span class="optionCheck">✓</span><span>Membantu saya tahu apa yang perlu diperbaiki</span></button>
+        <button class="reflectionBtn" type="button"><span class="optionCheck">✓</span><span>Membantu saya menulis dengan lebih yakin</span></button>
+      </div>
+      <p class="mini" style="margin-top:10px">Anda boleh pilih lebih daripada satu.</p>
+    </div>
+
+    <button class="btn primary full" type="button" style="margin-top:18px" onclick="finishMission()">Selesaikan Misi</button>
+  </div>
+</section>
+
+<section class="screen" data-step="9">
+  <div class="missionDone">
+    <div class="missionDoneIcon">✓</div>
+    <div class="missionDoneEyebrow">MISI SELESAI</div>
+    <h2>Misi Berjaya!</h2>
+    <p>Anda telah membaca feedback, memperbaiki penulisan dan membandingkan Versi 1 dengan Versi 2.</p>
+    <div class="missionDoneCard">
+      <strong>Syabas!</strong>
+      <span>Gunakan apa yang anda pelajari untuk penulisan seterusnya.</span>
+    </div>
+    <button type="button" class="btn primary" style="margin-top:22px;min-width:190px" onclick="returnHome()">Kembali ke Laman Utama</button>
+  </div>
+</section>
+</main>
+</div>
+
+<div class="action">
+  <div class="actionin">
+    <button id="backBtn" class="btn secondary" type="button" onclick="prevStep()" style="display:none">← Kembali</button>
+    <button id="nextBtn" class="btn primary" type="button" onclick="nextStep()">Mula Misi →</button>
+  </div>
+</div>
+
+<script>
+const FEEDBACK_BOT_URL="https://go.gov.sg/p1a";
+const DATA_SUBMISSION_URL="https://script.google.com/macros/s/AKfycbxzC_0bewZvFY1r4B2OlkfNLXCvDHAp9ZN0NMXCW58wtp01y_vYTFnLEj-STIN7XdX3/exec";
+
+const STUDENT_FEEDBACK=[
+  {name:"Adelia",image:"feedback/adelia.png"},
+  {name:"Dayyan",image:"feedback/dayyan.png"},
+  {name:"Harith",image:"feedback/harith.png"},
+  {name:"Firdaus",image:"feedback/firdaus.png"},
+  {name:"Fitri",image:"feedback/fitri.png"},
+  {name:"Faheem",image:"feedback/faheem.png"},
+  {name:"Irfan",image:"feedback/irfan.png"},
+  {name:"Hilman",image:"feedback/hilman.png"},
+  {name:"Khairullah",image:"feedback/khairullah.png"}
+];
+
+const SUPPORT_VOCABULARY={
+  Firdaus:[
+    ["perbarisan","parade"],["persembahan","performance"],["menyanyi","sing"],["aktiviti","activity"],
+    ["keluarga","family"],["kawan-kawan","friends"],["seronok","enjoyable / fun"],["bangga","proud"]
+  ],
+  Hilman:[
+    ["persiapan","preparation"],["menghias","decorate"],["perbarisan","parade"],["persembahan","performance"],
+    ["bunga api","fireworks"],["meriah","festive"],["bangga","proud"],["teruja","excited"]
+  ]
+};
+
+let currentStep=0;
+let timerSeconds=20*60;
+let timerInterval=null;
+const totalSteps=9;
+const screens=[...document.querySelectorAll(".screen")];
+
+function value(id){return document.getElementById(id)?.value||""}
+
+function loadStudentNames(){
+  const select=document.getElementById("studentSelect");
+  STUDENT_FEEDBACK.forEach(s=>{
+    const o=document.createElement("option");
+    o.value=s.name;o.textContent=s.name;select.appendChild(o);
+  });
+}
+
+function showStudentFeedback(shouldSave=true){
+  const name=value("studentSelect");
+  const item=STUDENT_FEEDBACK.find(s=>s.name===name);
+  const wrap=document.getElementById("feedbackWrap");
+  if(!item){wrap.classList.remove("show");return}
+
+  const img=document.getElementById("feedbackImage");
+  const err=document.getElementById("feedbackImageError");
+  err.style.display="none";
+  img.style.display="block";
+  img.onerror=()=>{img.style.display="none";err.style.display="block"};
+  img.onload=()=>{img.style.display="block";err.style.display="none"};
+  img.src=item.image;
+  img.alt=`Maklum balas ${item.name}`;
+  document.getElementById("feedbackCaption").textContent=`Maklum balas untuk ${item.name}`;
+  wrap.classList.add("show");
+
+  if(!value("studentName")) document.getElementById("studentName").value=item.name;
+  updateSupportPanel();
+  if(shouldSave) saveState();
+}
+
+function updateSupportPanel(){
+  const panel=document.getElementById("supportPanel");
+  const box=document.getElementById("customVocabulary");
+  if(!panel||!box)return;
+  const selected=value("studentSelect");
+  const vocab=SUPPORT_VOCABULARY[selected];
+  const show=Array.isArray(vocab);
+  panel.classList.toggle("show",show);
+  if(!show){panel.removeAttribute("open");box.innerHTML="";return}
+  box.innerHTML=vocab.map(([bm,en])=>`
+    <div class="supportPhrase"><strong>${bm}</strong>
+      <span style="display:block;margin-top:3px;color:var(--muted);font-size:12px">${en}</span>
+    </div>`).join("");
+}
+
+function updateFocus(){
+  const one=value("improve1").trim()||"Belum diisi.";
+  const two=value("improve2").trim()||"Belum diisi.";
+  ["focusImprove1","botImprove1","reviewImprove1"].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=one});
+  ["focusImprove2","botImprove2","reviewImprove2"].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=two});
+}
+
+function updateComparison(){
+  document.getElementById("oldContentView").textContent=value("oldContent")||"—";
+  document.getElementById("oldLanguageView").textContent=value("oldLanguage")||"—";
+  document.getElementById("newContentView").textContent=value("newContent")||"—";
+  document.getElementById("newLanguageView").textContent=value("newLanguage")||"—";
+  document.getElementById("v1Good1").textContent=value("goodThing1")||"—";
+  document.getElementById("v1Good2").textContent=value("goodThing2")||"—";
+  document.getElementById("v1Improve1").textContent=value("improve1")||"—";
+  document.getElementById("v1Improve2").textContent=value("improve2")||"—";
+  document.getElementById("v2Good1").textContent=value("newGood1")||"—";
+  document.getElementById("v2Improve1").textContent=value("newImprove1")||"—";
+}
+
+function showStep(step){
+  currentStep=Math.max(0,Math.min(totalSteps,step));
+  screens.forEach(s=>s.classList.toggle("active",Number(s.dataset.step)===currentStep));
+
+  document.getElementById("progressbar").style.width=`${(currentStep/totalSteps)*100}%`;
+  const labels=["Mula","Soalan","Contoh Feedback","Feedback Saya","Versi 2.0","Cuba Bot","Feedback Baharu","Banding","Renungan","Misi Berjaya"];
+  document.getElementById("stepLabel").textContent=labels[currentStep];
+  document.getElementById("stepCount").textContent=`${currentStep}/${totalSteps}`;
+
+  const back=document.getElementById("backBtn");
+  const next=document.getElementById("nextBtn");
+  const action=document.querySelector(".action");
+
+  back.style.display=(currentStep===0||currentStep===8||currentStep===9)?"none":"block";
+  next.style.display=(currentStep>=8)?"none":"block";
+  action.style.display=(currentStep>=8)?"none":"block";
+
+  const nextText={
+    0:"Mula Misi →",1:"Lihat Contoh Feedback →",2:"Lihat Feedback Saya →",
+    3:"Tulis Versi 2.0 →",4:"Cuba Bot →",5:"Analisis Feedback Baharu →",
+    6:"Bandingkan →",7:"Renungan →"
+  };
+  if(currentStep<8) next.textContent=nextText[currentStep];
+
+  if(currentStep===4||currentStep===5||currentStep===6) updateFocus();
+  if(currentStep===4) updateSupportPanel();
+  if(currentStep===7) updateComparison();
+
+  saveState();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function nextStep(){
+  if(currentStep===3){
+    if(!value("studentSelect")){alert("Sila pilih nama anda dahulu.");return}
+    if(!value("goodThing1").trim()||!value("goodThing2").trim()||!value("improve1").trim()||!value("improve2").trim()){
+      alert("Sila isi 2 perkara yang dilakukan dengan baik dan 2 perkara yang perlu dibaiki dahulu.");return
+    }
+  }
+  if(currentStep===6){
+    if(getSelectedIndex("fix1")<0||getSelectedIndex("fix2")<0||!value("newGood1").trim()||!value("newImprove1").trim()){
+      alert("Sila lengkapkan semakan feedback baharu dahulu.");return
+    }
+  }
+  showStep(currentStep+1);
+}
+function prevStep(){showStep(currentStep-1)}
+
+function startTimer(){
+  if(timerInterval)return;
+  timerInterval=setInterval(()=>{
+    if(timerSeconds>0){timerSeconds--;renderTimer()}
+    else{clearInterval(timerInterval);timerInterval=null;alert("Masa menulis tamat.")}
+  },1000)
+}
+function pauseTimer(){clearInterval(timerInterval);timerInterval=null}
+function resetTimer(){pauseTimer();timerSeconds=20*60;renderTimer()}
+function renderTimer(){
+  const m=String(Math.floor(timerSeconds/60)).padStart(2,"0");
+  const s=String(timerSeconds%60).padStart(2,"0");
+  document.getElementById("timerDisplay").textContent=`${m}:${s}`;
+}
+function openFeedbackBot(){window.open(FEEDBACK_BOT_URL,"_blank")}
+
+document.querySelectorAll(".singleSelect").forEach(group=>{
+  group.querySelectorAll(".resultBtn").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      group.querySelectorAll(".resultBtn").forEach(b=>b.classList.remove("selected"));
+      btn.classList.add("selected");saveState();
+    })
+  })
+});
+document.querySelectorAll(".reflectionChoices.singleSelect").forEach(group=>{
+  group.querySelectorAll(".reflectionBtn").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      group.querySelectorAll(".reflectionBtn").forEach(b=>b.classList.remove("selected"));
+      btn.classList.add("selected");saveState();
+    })
+  })
+});
+document.querySelectorAll(".reflectionChoices.multiSelect").forEach(group=>{
+  group.querySelectorAll(".reflectionBtn").forEach(btn=>{
+    btn.addEventListener("click",()=>{btn.classList.toggle("selected");saveState()})
+  })
+});
+document.querySelectorAll("input,textarea").forEach(el=>el.addEventListener("input",()=>{updateFocus();saveState()}));
+
+function getSelectedIndex(target){
+  const group=document.querySelector(`.singleSelect[data-target="${target}"]`);
+  if(!group)return -1;
+  return [...group.querySelectorAll(".resultBtn")].findIndex(x=>x.classList.contains("selected"));
+}
+function getSelectedButtonText(target){
+  const selected=document.querySelector(`.singleSelect[data-target="${target}"] .resultBtn.selected`);
+  return selected?selected.textContent.trim():"";
+}
+function getReflectionSingle(){
+  const selected=document.querySelector('.reflectionChoices[data-target="reflection1"] .reflectionBtn.selected');
+  return selected?selected.textContent.trim():"";
+}
+function getReflectionMulti(){
+  return [...document.querySelectorAll('.reflectionChoices[data-target="reflection2"] .reflectionBtn.selected')]
+    .map(x=>x.textContent.trim());
+}
+
+function buildSubmissionData(){
+  return {
+    studentName:value("studentName"),
+    studentClass:value("studentClass"),
+    feedbackStudent:value("studentSelect"),
+    oldContent:value("oldContent"),
+    oldLanguage:value("oldLanguage"),
+    goodThing1:value("goodThing1"),
+    goodThing2:value("goodThing2"),
+    improve1:value("improve1"),
+    improve2:value("improve2"),
+    newContent:value("newContent"),
+    newLanguage:value("newLanguage"),
+    improve1Fixed:getSelectedButtonText("fix1"),
+    improve2Fixed:getSelectedButtonText("fix2"),
+    newGood1:value("newGood1"),
+    newImprove1:value("newImprove1"),
+    reflection1:getReflectionSingle(),
+    reflection2:getReflectionMulti().join(" | ")
+  };
+}
+
+function submitStudentData(){
+  const data=buildSubmissionData();
+  let iframe=document.getElementById("submissionFrame");
+  if(!iframe){
+    iframe=document.createElement("iframe");
+    iframe.id="submissionFrame";iframe.name="submissionFrame";iframe.style.display="none";
+    document.body.appendChild(iframe);
+  }
+  const form=document.createElement("form");
+  form.method="POST";form.action=DATA_SUBMISSION_URL;form.target="submissionFrame";form.style.display="none";
+  Object.entries(data).forEach(([key,val])=>{
+    const input=document.createElement("input");
+    input.type="hidden";input.name=key;input.value=val??"";form.appendChild(input);
+  });
+  document.body.appendChild(form);
+  form.submit();
+  setTimeout(()=>form.remove(),1000);
+}
+
+function finishMission(){
+  if(!getReflectionSingle()){alert("Sila jawab Soalan 1 dahulu.");return}
+  if(getReflectionMulti().length===0){alert("Sila pilih sekurang-kurangnya satu jawapan untuk Soalan 2.");return}
+  saveState();
+  submitStudentData();
+  showStep(9);
+}
+function returnHome(){showStep(0)}
+
+function saveState(){
+  const data={
+    currentStep,timerSeconds,
+    studentName:value("studentName"),studentClass:value("studentClass"),studentSelect:value("studentSelect"),
+    oldContent:value("oldContent"),oldLanguage:value("oldLanguage"),
+    goodThing1:value("goodThing1"),goodThing2:value("goodThing2"),
+    improve1:value("improve1"),improve2:value("improve2"),
+    newContent:value("newContent"),newLanguage:value("newLanguage"),
+    newGood1:value("newGood1"),newImprove1:value("newImprove1"),
+    fix1Index:getSelectedIndex("fix1"),fix2Index:getSelectedIndex("fix2"),
+    reflection1:getReflectionSingle(),reflection2:getReflectionMulti()
+  };
+  localStorage.setItem("g1FeedbackMissionFinal",JSON.stringify(data));
+}
+
+function restoreState(){
+  try{
+    const raw=localStorage.getItem("g1FeedbackMissionFinal");
+    if(!raw)return;
+    const d=JSON.parse(raw);
+
+    ["studentName","studentClass","oldContent","oldLanguage","goodThing1","goodThing2","improve1","improve2",
+     "newContent","newLanguage","newGood1","newImprove1"].forEach(id=>{
+      const el=document.getElementById(id);if(el&&d[id]!==undefined)el.value=d[id]
+    });
+
+    if(d.studentSelect){
+      document.getElementById("studentSelect").value=d.studentSelect;
+      showStudentFeedback(false);
+    }
+    ["fix1","fix2"].forEach(target=>{
+      const idx=d[target+"Index"];
+      if(Number.isInteger(idx)&&idx>=0){
+        const buttons=document.querySelectorAll(`.singleSelect[data-target="${target}"] .resultBtn`);
+        buttons[idx]?.classList.add("selected");
+      }
+    });
+    if(d.reflection1){
+      document.querySelectorAll('.reflectionChoices[data-target="reflection1"] .reflectionBtn')
+        .forEach(btn=>btn.classList.toggle("selected",btn.textContent.trim()===d.reflection1));
+    }
+    if(Array.isArray(d.reflection2)){
+      document.querySelectorAll('.reflectionChoices[data-target="reflection2"] .reflectionBtn')
+        .forEach(btn=>btn.classList.toggle("selected",d.reflection2.includes(btn.textContent.trim())));
+    }
+    if(Number.isFinite(d.timerSeconds))timerSeconds=d.timerSeconds;
+    renderTimer();updateFocus();updateSupportPanel();
+    showStep(Number.isInteger(d.currentStep)?d.currentStep:0);
+  }catch(e){console.warn(e)}
+}
+
+loadStudentNames();
+renderTimer();
+restoreState();
+</script>
+</body>
+</html>
